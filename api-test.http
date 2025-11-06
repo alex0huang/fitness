@@ -1,0 +1,25 @@
+### 获取所有用户
+GET http://localhost:3000/users
+
+### 获取新建用户页面
+GET http://localhost:3000/users/new
+
+### 创建新用户
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+    "firstname": "张三",
+    "password": "123456"
+}
+
+### 获取特定用户
+GET http://localhost:3000/users/123
+
+### 更新用户
+PUT http://localhost:3000/users/123
+
+### 删除用户
+DELETE http://localhost:3000/users/123
+
+

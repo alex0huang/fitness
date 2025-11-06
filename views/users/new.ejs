@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Document</title>
+</head>
+<body>
+    <form action="/users" method="post">
+        <% if (locals.error) { %>
+            <!-- locals 是 EJS 模板中的对象，用于接收从服务器传递过来的数据 -->
+            <!-- 例如：res.render('users/new', { error: '密码不能为空' }) 中的 error 可以通过 locals.error 访问 -->
+            <div style="color: red; margin-bottom: 10px;">
+                <%= locals.error %>
+            </div>
+        <% } %>
+        
+        <!-- <label> 标签：为输入字段提供标签文本，点击标签可以聚焦到对应的输入框 -->
+        <!-- for="firstname" 与 input 的 id="firstname" 关联，使点击标签时能聚焦到输入框 -->
+        <label for="firstname">Name
+            <!-- name="firstname"：表单提交时，这个值会作为 req.body.firstname 发送到服务器 -->
+            <!-- id="firstname"：用于 label 的 for 属性关联，也用于 JavaScript 选择元素 -->
+            <!-- 
+            value="<%= locals.firstname || '' %>" 解释：
+            
+            1. locals 是服务器传递过来的数据对象
+               - 当服务器调用 res.render('users/new', { firstname: '张三' }) 时
+               - 模板中可以通过 locals.firstname 访问 '张三'
+            
+            2. 为什么服务器要传 firstname？
+               看 routes/users.js 第 19、30、34 行：
+               - 如果验证失败（密码为空或发生错误）
+               - 服务器会把用户刚才输入的名字传回来：{ firstname: req.body.firstname }
+               - 这样用户不需要重新输入名字，只需要修改密码
+            
+            3. || '' 是什么意思？
+               - 这是 JavaScript 的逻辑或运算符
+               - 如果 locals.firstname 是 undefined 或 null，就使用空字符串 ''
+               - 例如：第一次访问页面时，服务器没有传 firstname，locals.firstname 是 undefined
+               - 所以会显示 value=""，输入框是空的
+            -->
+            <input type="text" name="firstname" id="firstname" value="<%= locals.firstname || '' %>">
+        </label>
+      
+        <br><br>
+        
+        <label for="password">Password
+            <!-- name="password"：表单提交时，密码会作为 req.body.password 发送到服务器 -->
+            <!-- id="password"：用于 label 关联和 JavaScript 操作 -->
+            <!-- 注意：密码字段不应该有 value 属性！原因：
+                1. 安全性：如果验证失败，密码不应该保留在表单中
+                2. 用户体验：密码字段应该每次都是空的，防止误操作
+                3. 最佳实践：密码字段不应该显示之前输入的值（即使被隐藏） -->
+            <input type="password" name="password" id="password" required>
+        </label>
+        
+        <br><br>
+        <button type="submit">Create User</button>
+    </form>
+</body>
+</html>
