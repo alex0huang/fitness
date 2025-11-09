@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Document</title>
+    <title>登录</title>
 </head>
 <body>
-    <form action="/users" method="post">
+    <form action="/users/login" method="post">
         <% if (locals.error) { %>
             <div style="color: red; margin-bottom: 10px;">
                 <%= locals.error %>
@@ -25,7 +24,8 @@
         </label>
         
         <br><br>
-        <button type="submit">Create User</button>
+        <button type="submit">登录</button>
     </form>
 </body>
 </html>
+
