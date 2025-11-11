@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Document</title>
+    <title>注册用户</title>
 </head>
 <body>
     <form action="/users" method="post">
@@ -13,17 +12,23 @@
                 <%= locals.error %>
             </div>
         <% } %>
-        
-        <label for="firstname">Name
-            <input type="text" name="firstname" id="firstname" value="<%= locals.firstname || '' %>">
+
+        <label for="email">Email
+            <input type="email" name="email" id="email" required value="<%= locals.email || '' %>">
         </label>
-      
+
         <br><br>
-        
+
+        <label for="displayName">显示名称（可选）
+            <input type="text" name="displayName" id="displayName" value="<%= locals.displayName || '' %>">
+        </label>
+
+        <br><br>
+
         <label for="password">Password
             <input type="password" name="password" id="password" required>
         </label>
-        
+
         <br><br>
         <button type="submit">Create User</button>
     </form>

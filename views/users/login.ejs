@@ -12,20 +12,19 @@
                 <%= locals.error %>
             </div>
         <% } %>
-        
-        <label for="firstname">Name
-            <input type="text" name="firstname" id="firstname" value="<%= locals.firstname || '' %>">
+
+        <label for="email">Email
+            <input type="email" name="email" id="email" required value="<%= locals.email || '' %>">
         </label>
-      
+
         <br><br>
-        
+
         <label for="password">Password
             <input type="password" name="password" id="password" required>
         </label>
-        
+
         <br><br>
         <button type="submit">登录</button>
     </form>
 </body>
 </html>
-
