@@ -23,6 +23,8 @@ Thumbs.db
 *.swp
 *.swo
 *~
+# 缓存目录
+.npm-cache/
 
 # 构建输出
 dist/
