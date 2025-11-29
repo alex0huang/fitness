@@ -5,9 +5,19 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
+    daily_calorie_limit INTEGER,
+    daily_protein_limit NUMERIC(10,2),
+    daily_carbs_limit NUMERIC(10,2),
+    daily_fat_limit NUMERIC(10,2),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS daily_calorie_limit INTEGER,
+    ADD COLUMN IF NOT EXISTS daily_protein_limit NUMERIC(10,2),
+    ADD COLUMN IF NOT EXISTS daily_carbs_limit NUMERIC(10,2),
+    ADD COLUMN IF NOT EXISTS daily_fat_limit NUMERIC(10,2);
 
 CREATE TABLE IF NOT EXISTS meals (
     id SERIAL PRIMARY KEY,

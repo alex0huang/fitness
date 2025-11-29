@@ -4,22 +4,95 @@ GET http://localhost:3000/users
 ### 获取新建用户页面
 GET http://localhost:3000/users/new
 
-### 创建新用户
+### 创建新用户（注册）
 POST http://localhost:3000/users
 Content-Type: application/json
 
 {
-    "firstname": "张三",
+    "email": "test@example.com",
     "password": "123456"
 }
 
-### 获取特定用户
-GET http://localhost:3000/users/123
+### 登录（设置session）
+POST http://localhost:3000/users/login
+Content-Type: application/json
 
-### 更新用户
-PUT http://localhost:3000/users/123
+{
+    "email": "test@example.com",
+    "password": "123456"
+}
 
-### 删除用户
-DELETE http://localhost:3000/users/123
+### 获取所有餐食记录（需要登录，使用session cookie）
+GET http://localhost:3000/meals
+Cookie: connect.sid=YOUR_SESSION_COOKIE_HERE
+
+### 获取今日热量统计（需要登录，使用session cookie）
+GET http://localhost:3000/meals/stats/today
+Cookie: connect.sid=YOUR_SESSION_COOKIE_HERE
+
+### 创建新餐食记录（需要登录，使用session cookie）
+POST http://localhost:3000/meals
+Content-Type: application/json
+Cookie: connect.sid=YOUR_SESSION_COOKIE_HERE
+
+{
+    "title": "早餐",
+    "consumed_at": "2024-01-15T08:00:00Z",
+    "notes": "营养丰富的早餐",
+    "items": [
+        {
+            "food_name": "鸡蛋",
+            "serving_size": "2个",
+            "calories": 140,
+            "protein_grams": 12,
+            "carbs_grams": 1,
+            "fat_grams": 10
+        },
+        {
+            "food_name": "全麦面包",
+            "serving_size": "2片",
+            "calories": 160,
+            "protein_grams": 6,
+            "carbs_grams": 30,
+            "fat_grams": 2
+        }
+    ]
+}
+
+### 获取特定餐食详情（需要登录，使用session cookie）
+GET http://localhost:3000/meals/1
+Cookie: connect.sid=YOUR_SESSION_COOKIE_HERE
+
+### 向餐食添加食物项（需要登录，使用session cookie）
+POST http://localhost:3000/meals/1/items
+Content-Type: application/json
+Cookie: connect.sid=YOUR_SESSION_COOKIE_HERE
+
+{
+    "food_name": "牛奶",
+    "serving_size": "250ml",
+    "calories": 150,
+    "protein_grams": 8,
+    "carbs_grams": 12,
+    "fat_grams": 5
+}
+
+### 更新餐食记录（需要登录，使用session cookie）
+PUT http://localhost:3000/meals/1
+Content-Type: application/json
+Cookie: connect.sid=YOUR_SESSION_COOKIE_HERE
+
+{
+    "title": "丰盛早餐",
+    "notes": "更新后的备注"
+}
+
+### 删除餐食记录（需要登录，使用session cookie）
+DELETE http://localhost:3000/meals/1
+Cookie: connect.sid=YOUR_SESSION_COOKIE_HERE
+
+### 删除食物项（需要登录，使用session cookie）
+DELETE http://localhost:3000/meals/1/items/1
+Cookie: connect.sid=YOUR_SESSION_COOKIE_HERE
 
 
