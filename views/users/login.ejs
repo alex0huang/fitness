@@ -3,29 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录</title>
+    <title>登录 · Fitness Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: linear-gradient(180deg, #f9fbff 0%, #f3f4f6 100%);
+            --primary: #0a84ff;
+            --text: #0f172a;
+            --muted: #6b7280;
+            --panel: #ffffff;
+            --border: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'SF Pro Display', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 52px 16px;
+            letter-spacing: -0.01em;
+        }
+
+        .card {
+            width: min(420px, 100%);
+            padding: 32px;
+            border-radius: 20px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
+        }
+
+        h1 {
+            margin: 0 0 8px;
+        }
+
+        p {
+            margin: 0 0 18px;
+            color: var(--muted);
+        }
+
+        label {
+            display: block;
+            color: var(--text);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            color: var(--text);
+            font-size: 15px;
+        }
+
+        .field {
+            margin-bottom: 14px;
+        }
+
+        .error {
+            color: #b91c1c;
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            padding: 10px 12px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+
+        .btn {
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 10px 24px rgba(10, 132, 255, 0.22);
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(10, 132, 255, 0.18);
+        }
+
+        .link-row {
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .link-row a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .link-row a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <form action="/users/login" method="post">
-        <% if (locals.error) { %>
-            <div style="color: red; margin-bottom: 10px;">
-                <%= locals.error %>
+    <div class="card">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom: 14px;">
+            <div style="width:36px;height:36px;border-radius:12px;background:var(--primary);display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:800;">FT</div>
+            <div>
+                <div style="font-weight:700;">Fitness Tracker</div>
+                <div style="color:var(--muted); font-size: 13px;">简洁、专注的训练记录</div>
             </div>
-        <% } %>
-        
-        <label for="firstname">Name
-            <input type="text" name="firstname" id="firstname" value="<%= locals.firstname || '' %>">
-        </label>
-      
-        <br><br>
-        
-        <label for="password">Password
-            <input type="password" name="password" id="password" required>
-        </label>
-        
-        <br><br>
-        <button type="submit">登录</button>
-    </form>
+        </div>
+        <h1>欢迎回来</h1>
+        <p>登录以继续追踪你的训练与饮食。</p>
+        <form action="/users/login" method="post">
+            <% if (locals.error) { %>
+                <div class="error"><%= locals.error %></div>
+            <% } %>
+            <div class="field">
+                <label for="firstname">姓名</label>
+                <input type="text" name="firstname" id="firstname" value="<%= locals.firstname || '' %>" placeholder="你的名字" required>
+            </div>
+            <div class="field">
+                <label for="password">密码</label>
+                <input type="password" name="password" id="password" placeholder="输入密码" required>
+            </div>
+            <button type="submit" class="btn">登录</button>
+        </form>
+        <div class="link-row">
+            还没有账户？ <a href="/users/new">注册一个</a>
+        </div>
+    </div>
 </body>
 </html>
-
