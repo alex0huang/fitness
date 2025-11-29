@@ -3,10 +3,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Fitness Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: linear-gradient(180deg, #f8fbff 0%, #f3f4f6 100%);
+            --panel: #ffffff;
+            --primary: #0a84ff;
+            --text: #0f172a;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'SF Pro Display', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            letter-spacing: -0.01em;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 22px 7vw;
+            backdrop-filter: blur(14px);
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.75);
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .brand span {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: var(--primary);
+            color: #ffffff;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        nav a {
+            margin-left: 18px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 12px;
+            border-radius: 12px;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        nav a:hover {
+            background: rgba(15, 23, 42, 0.05);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 12px 32px rgba(10, 132, 255, 0.25);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(10, 132, 255, 0.18);
+        }
+
+        main {
+            padding: 0 7vw 88px;
+        }
+
+        .shell {
+            max-width: 1160px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            align-items: center;
+            gap: 40px;
+            padding: 44px 0 64px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #e8f2ff;
+            color: var(--primary);
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        h1 {
+            margin: 12px 0;
+            font-size: clamp(32px, 4vw, 50px);
+            line-height: 1.12;
+            letter-spacing: -1.1px;
+        }
+
+        .lead {
+            color: var(--muted);
+            font-size: 17px;
+            line-height: 1.65;
+            max-width: 620px;
+        }
+
+        .cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 26px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .stat {
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: #ffffffb3;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.04);
+        }
+
+        .stat h3 {
+            margin: 0 0 4px;
+            font-size: 26px;
+        }
+
+        .stat p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .panel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+            margin-top: 24px;
+        }
+
+        .panel {
+            padding: 20px;
+            border-radius: 18px;
+            background: #ffffffd9;
+            border: 1px solid var(--border);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+        }
+
+        .panel h4 {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+
+        .panel p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .chip {
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        footer {
+            margin-top: 64px;
+            padding: 20px 7vw 44px;
+            color: var(--muted);
+            border-top: 1px solid var(--border);
+        }
+
+        .summary-card {
+            border-radius: 22px;
+            padding: 20px;
+            background: linear-gradient(135deg, #eef4ff, #ffffff);
+            border: 1px solid #dfe9ff;
+            box-shadow: 0 16px 40px rgba(10, 132, 255, 0.08);
+        }
+
+        .summary-card h4 {
+            margin: 0 0 10px;
+            font-size: 20px;
+        }
+
+        .pill-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .pill {
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: #f4f7fb;
+            border: 1px solid #e2e8f0;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello World, this is jiasheng yap's website</h1>
-    
+<header>
+    <a href="/" class="brand"><span>FT</span> Fitness Tracker</a>
+    <nav>
+        <a href="#features">特色</a>
+        <a href="#planning">计划</a>
+        <a class="btn btn-secondary" href="/users/login">登录</a>
+        <a class="btn btn-primary" href="/users/new">立即开始</a>
+    </nav>
+</header>
+
+<main>
+    <div class="shell">
+        <section class="hero">
+            <div>
+                <div class="eyebrow">智能健身助理</div>
+                <h1>记录每一次训练，放大每一分努力</h1>
+                <p class="lead">跟踪你的每日餐饮、训练计划与进展，使用数据化的方式帮助你保持专注、持续复盘，离目标更近一步。</p>
+                <div class="cta-row">
+                    <a class="btn btn-primary" href="/users/new">注册账号</a>
+                    <a class="btn btn-secondary" href="/users/login">已有账户？登录</a>
+                </div>
+                <div class="stats">
+                    <div class="stat">
+                        <h3>1200+</h3>
+                        <p>每日记录的餐饮与训练</p>
+                    </div>
+                    <div class="stat">
+                        <h3>92%</h3>
+                        <p>坚持打卡用户的达标率</p>
+                    </div>
+                    <div class="stat">
+                        <h3>7 天</h3>
+                        <p>快速形成习惯的平均时间</p>
+                    </div>
+                </div>
+            </div>
+            <div class="summary-card">
+                <h4>今日概览</h4>
+                <div class="panel-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+                    <div class="panel" style="margin:0; background: #f8fafc; border-style: dashed; border-color: #dbeafe; box-shadow: none;">
+                        <h4 style="margin-bottom:4px;">营养摄入</h4>
+                        <p>蛋白质 92g · 碳水 160g · 脂肪 48g</p>
+                    </div>
+                    <div class="panel" style="margin:0; background: #f8fafc; border-style: dashed; border-color: #dbeafe; box-shadow: none;">
+                        <h4 style="margin-bottom:4px;">训练完成度</h4>
+                        <p>力量训练 45 分钟 · 心肺训练 20 分钟</p>
+                    </div>
+                </div>
+                <div class="pill-row" style="margin-top: 18px;">
+                    <span class="pill">饮食日记</span>
+                    <span class="pill">训练计划</span>
+                    <span class="pill">进度追踪</span>
+                    <span class="pill">提醒与洞察</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="panel-grid">
+            <div class="panel">
+                <h4>记录 & 对比</h4>
+                <p>快速记录餐饮与训练，自动汇总每日/每周数据，帮助你从趋势中发现进步。</p>
+            </div>
+            <div class="panel">
+                <h4>智能提醒</h4>
+                <p>按照你的训练计划推送提醒，不再错过关键的补水、拉伸和补给时机。</p>
+            </div>
+            <div class="panel">
+                <h4>目标管理</h4>
+                <p>设定体重、体脂、力量目标，系统自动生成可执行的周计划与每日任务。</p>
+            </div>
+        </section>
+
+        <section id="planning" style="margin-top: 28px;">
+            <div class="panel" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; align-items: center;">
+                <div>
+                    <h4>准备好开始了吗？</h4>
+                    <p style="margin-top:8px; color: var(--muted);">创建一个账户，记录你今天的第一顿餐饮或训练，系统会根据你的数据给出下一步建议。</p>
+                </div>
+                <div class="cta-row">
+                    <a class="btn btn-primary" href="/users/new">立即创建</a>
+                    <a class="btn btn-secondary" href="/users/login">我已有账户</a>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer>
+    © <%= new Date().getFullYear() %> Fitness Tracker · Keep moving, stay consistent.
+</footer>
 </body>
 </html>
