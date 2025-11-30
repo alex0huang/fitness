@@ -9,19 +9,29 @@ const requireAuth = (req, res, next) => {
     console.log('认证检查 - Session ID:', req.sessionID);
     console.log('认证检查 - Session:', req.session);
     console.log('认证检查 - Cookies:', req.headers.cookie);
+    console.log('认证检查 - Session Store:', req.sessionStore?.constructor?.name);
     
     if (req.session && req.session.userId) {
         req.userId = req.session.userId;
         req.userEmail = req.session.userEmail;
+        console.log('认证成功 - User ID:', req.userId);
         next();
     } else {
+        console.log('认证失败 - 没有 session 或 userId');
         // 如果是API请求（JSON或Accept头包含application/json），返回JSON错误
         const isApiRequest = req.headers['content-type'] === 'application/json' || 
                             req.headers['accept']?.includes('application/json') ||
                             req.path.startsWith('/api');
         
         if (isApiRequest) {
-            return res.status(401).json({ error: '未授权，请先登录' });
+            return res.status(401).json({ 
+                error: '未授权，请先登录',
+                debug: {
+                    hasSession: !!req.session,
+                    sessionId: req.sessionID,
+                    cookies: req.headers.cookie
+                }
+            });
         }
         // 如果是页面请求，重定向到登录页
         res.redirect('/users/login');
@@ -146,6 +156,7 @@ router.post('/login', async (req, res) => {
                 } else {
                     console.log('登录成功 - Session ID:', req.sessionID);
                     console.log('登录成功 - Session:', req.session);
+                    console.log('Cookie 将被设置:', req.session.cookie);
                     resolve();
                 }
             });
@@ -155,13 +166,21 @@ router.post('/login', async (req, res) => {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         res.setHeader('Access-Control-Allow-Origin', frontendUrl);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
+        
+        // 调试：打印响应头
+        console.log('响应头设置:', {
+            'Access-Control-Allow-Origin': frontendUrl,
+            'Access-Control-Allow-Credentials': 'true',
+            'Set-Cookie': res.getHeader('Set-Cookie')
+        });
 
         return res.json({ 
             message: '登录成功',
             user: {
                 id: user.id,
                 email: user.email
-            }
+            },
+            sessionId: req.sessionID // 调试用，返回 session ID
         });
     } catch (error) {
         console.error('Error during login:', error);
