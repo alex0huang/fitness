@@ -95,3 +95,26 @@
     background: #ffffff;
 }
 
+/* 移动端按钮优化 */
+@media (max-width: 768px) {
+    .btn {
+        padding: 14px 20px;
+        font-size: 16px;
+        min-height: 48px; /* 确保按钮足够大，易于点击 */
+    }
+}
+
+@media (max-width: 480px) {
+    .btn {
+        padding: 12px 18px;
+        font-size: 15px;
+        width: 100%; /* 小屏幕上按钮占满宽度 */
+    }
+
+    .field input,
+    .field textarea {
+        font-size: 16px; /* 防止 iOS 自动缩放 */
+        padding: 14px 16px;
+    }
+}
+

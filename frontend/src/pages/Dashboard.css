@@ -359,14 +359,163 @@
     font-size: 16px;
 }
 
+/* 移动端优化 */
 @media (max-width: 768px) {
+    .dashboard-main {
+        padding: 24px 16px;
+    }
+
+    .header-content {
+        padding: 16px 16px;
+        gap: 16px;
+    }
+
+    .header-content nav {
+        gap: 8px;
+    }
+
+    .dashboard-container h1 {
+        font-size: 28px;
+    }
+
+    .dashboard-header-section {
+        margin-bottom: 24px;
+        gap: 16px;
+    }
+
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        padding: 20px 16px;
+        border-radius: 16px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+    }
+
+    .stat-unit {
+        font-size: 13px;
+    }
+
+    .action-bar {
+        margin-bottom: 24px;
+    }
+
+    .meals-list {
+        gap: 24px;
+    }
+
+    .meal-card {
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    .meal-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .meal-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .meal-header h3 {
+        font-size: 18px;
     }
 
     .meal-stats {
         flex-direction: column;
+        gap: 10px;
+        padding-top: 12px;
+    }
+
+    .meal-stat {
+        font-size: 13px;
+    }
+
+    .empty-state {
+        padding: 60px 20px;
+    }
+
+    .empty-state p {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    .date-selector {
+        flex-direction: column;
+        align-items: flex-start;
         gap: 8px;
+        width: 100%;
+    }
+
+    .date-input {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 16px; /* 防止 iOS 自动缩放 */
+    }
+}
+
+/* 小屏幕手机优化 */
+@media (max-width: 480px) {
+    .dashboard-main {
+        padding: 20px 12px;
+    }
+
+    .header-content {
+        padding: 12px 12px;
+        flex-wrap: wrap;
+    }
+
+    .dashboard-container h1 {
+        font-size: 24px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 18px 14px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+    }
+
+    .meal-card {
+        padding: 14px;
+    }
+
+    .meal-header h3 {
+        font-size: 16px;
+    }
+
+    .btn-edit-meal,
+    .btn-delete-meal {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+
+    .empty-state {
+        padding: 40px 16px;
+    }
+
+    .empty-state p {
+        font-size: 14px;
     }
 }
 

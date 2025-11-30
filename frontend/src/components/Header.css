@@ -48,3 +48,49 @@ nav a:hover {
     background: rgba(15, 23, 42, 0.05);
 }
 
+/* 移动端优化 */
+@media (max-width: 768px) {
+    header {
+        padding: 16px 16px;
+    }
+
+    .brand {
+        font-size: 18px;
+        gap: 10px;
+    }
+
+    .brand span {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+
+    nav {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    nav a {
+        margin-left: 0;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    header {
+        padding: 12px 12px;
+        flex-wrap: wrap;
+    }
+
+    .brand {
+        font-size: 16px;
+    }
+
+    nav a {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}
+
