@@ -13,9 +13,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     exposedHeaders: ['Set-Cookie'],
 }));
-
-// 处理 OPTIONS 预检请求
-app.options('*', cors());
+// 注意：CORS 中间件已经自动处理 OPTIONS 预检请求，不需要单独的路由
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // 支持JSON请求体
