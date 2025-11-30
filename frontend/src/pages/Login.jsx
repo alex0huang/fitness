@@ -17,12 +17,8 @@ function Login() {
         setLoading(true);
 
         try {
-            console.log('开始登录，用户名:', firstname);
             const result = await login(firstname, password);
-            console.log('登录成功，结果:', result);
-            console.log('当前 API URL:', import.meta.env.VITE_API_BASE_URL);
-            // 等待一下确保 cookie 被设置
-            await new Promise(resolve => setTimeout(resolve, 500));
+            console.log('登录成功');
             navigate('/dashboard');
         } catch (err) {
             console.error('登录失败:', err);

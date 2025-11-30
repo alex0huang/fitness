@@ -1,21 +1,36 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
-// 调试：打印 API URL
-console.log('API_BASE_URL:', API_BASE_URL);
-console.log('VITE_API_BASE_URL env:', import.meta.env.VITE_API_BASE_URL);
+// 从 localStorage 获取 token
+const getToken = () => {
+    return localStorage.getItem('authToken');
+};
 
-// 设置请求选项，包含凭据以支持 session
+// 保存 token 到 localStorage
+export const setToken = (token) => {
+    if (token) {
+        localStorage.setItem('authToken', token);
+    } else {
+        localStorage.removeItem('authToken');
+    }
+};
+
+// 设置请求选项，包含 JWT token
 const fetchOptions = (method, body) => {
-    const options = {
+    const token = getToken();
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+    
+    // 如果有 token，添加到请求头
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return {
         method,
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        credentials: 'include', // 重要：包含 cookies/session
+        headers,
         ...(body && { body: JSON.stringify(body) }),
     };
-    console.log('请求选项:', { method, url: `${API_BASE_URL}`, credentials: options.credentials });
-    return options;
 };
 
 // 处理响应
@@ -30,16 +45,17 @@ const handleResponse = async (response) => {
 // 登录
 export const login = async (email, password) => {
     const url = `${API_BASE_URL}/users/login`;
-    console.log('登录请求 URL:', url);
     const options = fetchOptions('POST', { firstname: email, password });
-    console.log('登录请求选项:', options);
     
     const response = await fetch(url, options);
-    console.log('登录响应状态:', response.status);
-    console.log('登录响应头:', Object.fromEntries(response.headers.entries()));
-    
     const result = await handleResponse(response);
-    console.log('登录响应数据:', result);
+    
+    // 保存 token 到 localStorage
+    if (result.token) {
+        setToken(result.token);
+        console.log('Token 已保存到 localStorage');
+    }
+    
     return result;
 };
 
@@ -53,10 +69,10 @@ export const register = async (email, password) => {
 
 // 登出
 export const logout = async () => {
-    const response = await fetch(`${API_BASE_URL}/users/logout`, {
-        ...fetchOptions('POST'),
-    });
-    return handleResponse(response);
+    // 清除 token
+    setToken(null);
+    console.log('Token 已清除');
+    return { message: '登出成功' };
 };
 
 // 获取餐食列表

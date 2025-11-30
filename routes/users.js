@@ -1,40 +1,34 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const pool = require('../database');
 
-// 认证中间件 - 检查用户是否已登录
+// JWT 密钥（生产环境应该使用环境变量）
+const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET || 'your-jwt-secret-change-in-production';
+
+// 认证中间件 - 检查 JWT token
 const requireAuth = (req, res, next) => {
-    // 调试信息
-    console.log('认证检查 - Session ID:', req.sessionID);
-    console.log('认证检查 - Session:', req.session);
-    console.log('认证检查 - Cookies:', req.headers.cookie);
-    console.log('认证检查 - Session Store:', req.sessionStore?.constructor?.name);
-    
-    if (req.session && req.session.userId) {
-        req.userId = req.session.userId;
-        req.userEmail = req.session.userEmail;
+    try {
+        // 从请求头获取 token
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+        
+        if (!token) {
+            console.log('认证失败 - 没有 token');
+            return res.status(401).json({ error: '未授权，请先登录' });
+        }
+        
+        // 验证 token
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.userId = decoded.userId;
+        req.userEmail = decoded.email;
+        
         console.log('认证成功 - User ID:', req.userId);
         next();
-    } else {
-        console.log('认证失败 - 没有 session 或 userId');
-        // 如果是API请求（JSON或Accept头包含application/json），返回JSON错误
-        const isApiRequest = req.headers['content-type'] === 'application/json' || 
-                            req.headers['accept']?.includes('application/json') ||
-                            req.path.startsWith('/api');
-        
-        if (isApiRequest) {
-            return res.status(401).json({ 
-                error: '未授权，请先登录',
-                debug: {
-                    hasSession: !!req.session,
-                    sessionId: req.sessionID,
-                    cookies: req.headers.cookie
-                }
-            });
-        }
-        // 如果是页面请求，重定向到登录页
-        res.redirect('/users/login');
+    } catch (error) {
+        console.log('认证失败 - Token 验证失败:', error.message);
+        return res.status(401).json({ error: '未授权，请先登录' });
     }
 };
 
@@ -96,25 +90,13 @@ router.post('/', async (req, res) => {
 //     res.render('users/login');
 // });
 
-// 登出
+// 登出（JWT 方案中，登出主要是前端删除 token）
 router.post('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            console.error('Error destroying session:', err);
-            return res.status(500).json({ error: '登出失败' });
-        }
-        res.json({ message: '登出成功' });
-    });
+    res.json({ message: '登出成功' });
 });
 
 router.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            console.error('Error destroying session:', err);
-            return res.status(500).json({ error: '登出失败' });
-        }
-        res.json({ message: '登出成功' });
-    });
+    res.json({ message: '登出成功' });
 });
 
 // 登录处理
@@ -143,44 +125,26 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: '密码错误' });
         }
 
-        // 设置session
-        req.session.userId = user.id;
-        req.session.userEmail = user.email;
-        
-        // 手动保存 session（确保在返回响应前保存）
-        await new Promise((resolve, reject) => {
-            req.session.save((err) => {
-                if (err) {
-                    console.error('Session保存失败:', err);
-                    reject(err);
-                } else {
-                    console.log('登录成功 - Session ID:', req.sessionID);
-                    console.log('登录成功 - Session:', req.session);
-                    console.log('Cookie 将被设置:', req.session.cookie);
-                    resolve();
-                }
-            });
-        });
+        // 生成 JWT token
+        const token = jwt.sign(
+            { 
+                userId: user.id, 
+                email: user.email 
+            },
+            JWT_SECRET,
+            { expiresIn: '7d' } // token 7天后过期
+        );
 
-        // 设置 CORS 头部（确保跨域请求正常工作）
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        res.setHeader('Access-Control-Allow-Origin', frontendUrl);
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-        
-        // 调试：打印响应头
-        console.log('响应头设置:', {
-            'Access-Control-Allow-Origin': frontendUrl,
-            'Access-Control-Allow-Credentials': 'true',
-            'Set-Cookie': res.getHeader('Set-Cookie')
-        });
+        console.log('登录成功 - User ID:', user.id);
+        console.log('JWT Token 已生成');
 
         return res.json({ 
             message: '登录成功',
+            token: token, // 返回 token
             user: {
                 id: user.id,
                 email: user.email
-            },
-            sessionId: req.sessionID // 调试用，返回 session ID
+            }
         });
     } catch (error) {
         console.error('Error during login:', error);
