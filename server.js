@@ -14,15 +14,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // 支持JSON请求体
 
 // 配置session
+const isProduction = process.env.NODE_ENV === 'production';
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-session-secret-change-in-production',
     resave: true, // 改为 true，确保 session 被保存
     saveUninitialized: true, // 改为 true，即使没有修改也保存
     name: 'connect.sid', // 明确指定 session cookie 名称
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // 生产环境使用HTTPS时设为true
+        secure: isProduction, // 生产环境使用HTTPS时设为true
         maxAge: 24 * 60 * 60 * 1000, // 24小时
-        sameSite: 'lax', // 允许跨站请求携带 cookie
+        sameSite: isProduction ? 'none' : 'lax', // 跨域时需要 'none'
         httpOnly: true, // 防止 XSS 攻击
         path: '/' // 确保 cookie 在所有路径都可用
     }
