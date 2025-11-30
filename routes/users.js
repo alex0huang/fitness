@@ -206,21 +206,9 @@ router.put('/me/goals', requireAuth, async (req, res) => {
     }
 });
 
-//route chaining - 必须在 /me 路由之后
-router.route('/:id')
-    .get((req, res) => {
-        res.send(`User ${req.params.id}`);
-    })
-    .delete((req, res) => {
-        res.send(`User ${req.params.id} deleted`);
-    })
-    .put((req, res) => {
-        res.send(`User ${req.params.id} updated`);
-    });
-
-router.param('id', (req, res, next,id) => {
-    console.log(id);
-    next(); 
+// 简单的用户路由（如果需要的话）
+router.get('/:id', (req, res) => {
+    res.json({ id: req.params.id, message: 'User endpoint' });
 });
 
 // 导出认证中间件供其他路由使用
