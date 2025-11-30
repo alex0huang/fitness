@@ -24,6 +24,9 @@ const fetchOptions = (method, body) => {
     // 如果有 token，添加到请求头
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+        console.log('请求包含 token:', token.substring(0, 20) + '...');
+    } else {
+        console.warn('请求没有 token');
     }
     
     return {
@@ -53,7 +56,10 @@ export const login = async (email, password) => {
     // 保存 token 到 localStorage
     if (result.token) {
         setToken(result.token);
-        console.log('Token 已保存到 localStorage');
+        console.log('Token 已保存到 localStorage:', result.token.substring(0, 20) + '...');
+        console.log('验证 token 是否保存:', getToken() ? '是' : '否');
+    } else {
+        console.error('登录响应中没有 token:', result);
     }
     
     return result;

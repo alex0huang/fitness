@@ -12,12 +12,17 @@ const requireAuth = (req, res, next) => {
     try {
         // 从请求头获取 token
         const authHeader = req.headers.authorization;
+        console.log('认证检查 - Authorization 头:', authHeader ? authHeader.substring(0, 30) + '...' : '无');
+        
         const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
         
         if (!token) {
             console.log('认证失败 - 没有 token');
+            console.log('请求头:', JSON.stringify(req.headers, null, 2));
             return res.status(401).json({ error: '未授权，请先登录' });
         }
+        
+        console.log('找到 token，开始验证:', token.substring(0, 20) + '...');
         
         // 验证 token
         const decoded = jwt.verify(token, JWT_SECRET);
@@ -28,6 +33,7 @@ const requireAuth = (req, res, next) => {
         next();
     } catch (error) {
         console.log('认证失败 - Token 验证失败:', error.message);
+        console.log('错误详情:', error);
         return res.status(401).json({ error: '未授权，请先登录' });
     }
 };
