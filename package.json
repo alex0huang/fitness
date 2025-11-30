@@ -5,7 +5,12 @@
   "scripts": {
     "start": "node server.js",
     "devStart": "nodemon server.js",
-    "migrate": "node scripts/init-db.js"
+    "migrate": "node scripts/init-db.js",
+    "migrate:cleanup": "node scripts/run-migration.js 002_auto_cleanup_function.sql",
+    "cleanup": "node scripts/cleanup-old-data.js",
+    "dev": "concurrently \"npm run devStart\" \"cd frontend && npm run dev\"",
+    "frontend": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build"
   },
   "keywords": [],
   "author": "",
@@ -14,13 +19,14 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
-    "ejs": "^3.1.10",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "nodemon": "^3.1.10"
   }
 }

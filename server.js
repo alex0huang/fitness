@@ -1,25 +1,36 @@
 const express = require('express');
 const session = require('express-session');
+const cors = require('cors');
 const app = express();
 const pool = require('./database');
 
-app.set('view engine', 'ejs');
+// 配置 CORS - 允许前端访问
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173', // 从环境变量读取前端URL
+    credentials: true, // 允许发送 cookies/session
+}));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // 支持JSON请求体
 
 // 配置session
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-session-secret-change-in-production',
-    resave: false,
-    saveUninitialized: false,
+    resave: true, // 改为 true，确保 session 被保存
+    saveUninitialized: true, // 改为 true，即使没有修改也保存
+    name: 'connect.sid', // 明确指定 session cookie 名称
     cookie: { 
-        secure: false, // 生产环境使用HTTPS时设为true
-        maxAge: 24 * 60 * 60 * 1000 // 24小时
+        secure: process.env.NODE_ENV === 'production', // 生产环境使用HTTPS时设为true
+        maxAge: 24 * 60 * 60 * 1000, // 24小时
+        sameSite: 'lax', // 允许跨站请求携带 cookie
+        httpOnly: true, // 防止 XSS 攻击
+        path: '/' // 确保 cookie 在所有路径都可用
     }
 }));
 
+// API 根路径
 app.get('/', (req, res) => {
-    res.render('index');    
+    res.json({ message: 'Fitness Tracker API' });
 });
 
 const usersRouter = require('./routes/users');
@@ -28,6 +39,12 @@ app.use('/users', usersRouter);
 const mealsRouter = require('./routes/meals');
 app.use('/meals', mealsRouter);
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+// 管理路由（用于数据库维护）
+const adminRouter = require('./routes/admin');
+app.use('/admin', adminRouter);
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });

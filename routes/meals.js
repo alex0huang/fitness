@@ -30,14 +30,39 @@ router.get('/', async (req, res) => {
         const params = [userId];
 
         if (date) {
-            query += ` AND DATE(m.consumed_at) = $2`;
-            params.push(date);
+            // 确保日期格式正确，处理时区问题
+            // 前端传递的日期可能是UTC日期，需要转换为本地日期范围查询
+            const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
+            // 使用日期范围查询，避免时区问题
+            // 查询该日期当天的所有记录（考虑时区）
+            query += ` AND DATE(m.consumed_at) = $2::date`;
+            params.push(dateStr);
+            console.log('查询日期:', dateStr, '用户ID:', userId);
         }
 
         query += ` GROUP BY m.id ORDER BY m.consumed_at DESC`;
 
-        const result = await pool.query(query, params);
-        res.json(result.rows);
+        const mealsResult = await pool.query(query, params);
+        console.log(`查询到 ${mealsResult.rows.length} 个餐食记录`);
+        
+        // 获取每个餐食的食物项
+        const mealsWithItems = await Promise.all(
+            mealsResult.rows.map(async (meal) => {
+                const itemsResult = await pool.query(
+                    'SELECT * FROM meal_items WHERE meal_id = $1 ORDER BY id',
+                    [meal.id]
+                );
+                const mealWithItems = {
+                    ...meal,
+                    items: itemsResult.rows
+                };
+                console.log(`Meal ${meal.id} 有 ${itemsResult.rows.length} 个items`);
+                return mealWithItems;
+            })
+        );
+        
+        console.log(`返回 ${mealsWithItems.length} 个餐食记录（包含items）`);
+        res.json(mealsWithItems);
     } catch (error) {
         console.error('Error fetching meals:', error);
         res.status(500).json({ error: '获取餐食记录失败' });
@@ -219,18 +244,22 @@ router.post('/:mealId/items', async (req, res) => {
 
 // 更新餐食记录
 router.put('/:mealId', async (req, res) => {
+    const client = await pool.connect();
     try {
+        await client.query('BEGIN');
+        
         const userId = req.userId;
         const mealId = req.params.mealId;
-        const { title, consumed_at, notes } = req.body;
+        const { title, consumed_at, notes, items } = req.body;
 
         // 验证餐食属于当前用户
-        const mealCheck = await pool.query(
+        const mealCheck = await client.query(
             'SELECT id FROM meals WHERE id = $1 AND user_id = $2',
             [mealId, userId]
         );
 
         if (mealCheck.rows.length === 0) {
+            await client.query('ROLLBACK');
             return res.status(404).json({ error: '餐食记录不存在' });
         }
 
@@ -251,26 +280,115 @@ router.put('/:mealId', async (req, res) => {
             values.push(notes);
         }
 
-        if (updateFields.length === 0) {
-            return res.status(400).json({ error: '没有要更新的字段' });
+        if (updateFields.length > 0) {
+            updateFields.push(`updated_at = NOW()`);
+            values.push(mealId);
+            values.push(userId);
+
+            await client.query(
+                `UPDATE meals 
+                 SET ${updateFields.join(', ')}
+                 WHERE id = $${paramIndex++} AND user_id = $${paramIndex++}`,
+                values
+            );
         }
 
-        updateFields.push(`updated_at = NOW()`);
-        values.push(mealId);
-        values.push(userId);
+        // 如果提供了items，更新食物项（即使items为空数组也要处理）
+        if (items !== undefined && Array.isArray(items)) {
+            console.log(`更新meal ${mealId} 的items - 收到${items.length}个items`);
+            console.log('Items数据:', JSON.stringify(items, null, 2));
+            
+            // 删除所有旧的食物项
+            const deleteResult = await client.query('DELETE FROM meal_items WHERE meal_id = $1', [mealId]);
+            console.log(`删除了${deleteResult.rowCount}个旧items`);
+            
+            // 插入新的食物项（只插入有效的食物项）
+            const validItems = items.filter(item => {
+                const isValid = item && item.food_name && typeof item.food_name === 'string' && item.food_name.trim().length > 0;
+                if (!isValid) {
+                    console.log('过滤掉的无效item:', item);
+                }
+                return isValid;
+            });
+            
+            console.log(`有效items数量: ${validItems.length}`);
+            
+            for (let i = 0; i < validItems.length; i++) {
+                const item = validItems[i];
+                // 确保数值正确转换，处理空字符串、null、undefined
+                const calories = (item.calories === '' || item.calories === null || item.calories === undefined) 
+                    ? 0 
+                    : (parseInt(String(item.calories)) || 0);
+                const protein = (item.protein_grams === '' || item.protein_grams === null || item.protein_grams === undefined) 
+                    ? 0 
+                    : (parseFloat(String(item.protein_grams)) || 0);
+                const carbs = (item.carbs_grams === '' || item.carbs_grams === null || item.carbs_grams === undefined) 
+                    ? 0 
+                    : (parseFloat(String(item.carbs_grams)) || 0);
+                const fat = (item.fat_grams === '' || item.fat_grams === null || item.fat_grams === undefined) 
+                    ? 0 
+                    : (parseFloat(String(item.fat_grams)) || 0);
+                
+                console.log(`插入item ${i + 1}:`, {
+                    food_name: item.food_name.trim(),
+                    calories: calories,
+                    protein: protein,
+                    carbs: carbs,
+                    fat: fat
+                });
+                
+                const insertResult = await client.query(
+                    `INSERT INTO meal_items 
+                     (meal_id, food_name, serving_size, calories, protein_grams, carbs_grams, fat_grams)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7)
+                     RETURNING id`,
+                    [
+                        mealId,
+                        item.food_name.trim(),
+                        item.serving_size || null,
+                        calories,
+                        protein,
+                        carbs,
+                        fat
+                    ]
+                );
+                console.log(`成功插入item，ID: ${insertResult.rows[0].id}`);
+            }
+            
+            console.log(`meal ${mealId} 的items更新完成，共插入${validItems.length}个items`);
+        }
 
-        const result = await pool.query(
-            `UPDATE meals 
-             SET ${updateFields.join(', ')}
-             WHERE id = $${paramIndex++} AND user_id = $${paramIndex++}
-             RETURNING *`,
-            values
+        await client.query('COMMIT');
+
+        // 返回完整的餐食记录（包括食物项）
+        const fullMealResult = await pool.query(
+            `SELECT m.*, 
+                    COALESCE(SUM(mi.calories), 0) as total_calories,
+                    COALESCE(SUM(mi.protein_grams), 0) as total_protein,
+                    COALESCE(SUM(mi.carbs_grams), 0) as total_carbs,
+                    COALESCE(SUM(mi.fat_grams), 0) as total_fat
+             FROM meals m
+             LEFT JOIN meal_items mi ON m.id = mi.meal_id
+             WHERE m.id = $1
+             GROUP BY m.id`,
+            [mealId]
         );
 
-        res.json(result.rows[0]);
+        const itemsResult = await pool.query(
+            'SELECT * FROM meal_items WHERE meal_id = $1 ORDER BY id',
+            [mealId]
+        );
+
+        const fullMeal = fullMealResult.rows[0];
+        fullMeal.items = itemsResult.rows;
+
+        res.json(fullMeal);
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Error updating meal:', error);
         res.status(500).json({ error: '更新餐食记录失败' });
+    } finally {
+        client.release();
     }
 });
 
@@ -296,6 +414,67 @@ router.delete('/:mealId', async (req, res) => {
     } catch (error) {
         console.error('Error deleting meal:', error);
         res.status(500).json({ error: '删除餐食记录失败' });
+    }
+});
+
+// 更新食物项
+router.put('/:mealId/items/:itemId', async (req, res) => {
+    try {
+        const userId = req.userId;
+        const mealId = req.params.mealId;
+        const itemId = req.params.itemId;
+        const { food_name, serving_size, calories, protein_grams, carbs_grams, fat_grams } = req.body;
+
+        // 验证餐食属于当前用户
+        const mealCheck = await pool.query(
+            'SELECT id FROM meals WHERE id = $1 AND user_id = $2',
+            [mealId, userId]
+        );
+
+        if (mealCheck.rows.length === 0) {
+            return res.status(404).json({ error: '餐食记录不存在' });
+        }
+
+        // 验证食物项属于该餐食
+        const itemCheck = await pool.query(
+            'SELECT id FROM meal_items WHERE id = $1 AND meal_id = $2',
+            [itemId, mealId]
+        );
+
+        if (itemCheck.rows.length === 0) {
+            return res.status(404).json({ error: '食物项不存在' });
+        }
+
+        if (!food_name) {
+            return res.status(400).json({ error: '食物名称不能为空' });
+        }
+
+        const result = await pool.query(
+            `UPDATE meal_items 
+             SET food_name = $1, 
+                 serving_size = $2, 
+                 calories = $3, 
+                 protein_grams = $4, 
+                 carbs_grams = $5, 
+                 fat_grams = $6,
+                 updated_at = NOW()
+             WHERE id = $7
+             RETURNING *`,
+            [
+                food_name,
+                serving_size || null,
+                calories || 0,
+                protein_grams || 0,
+                carbs_grams || 0,
+                fat_grams || 0,
+                itemId
+            ]
+        );
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error updating meal item:', error);
+        res.status(500).json({ error: '更新食物项失败' });
     }
 });
 

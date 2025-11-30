@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: fitness-api
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false  # 需要手动设置数据库连接字符串
+      - key: FRONTEND_URL
+        sync: false  # 需要手动设置前端URL
+

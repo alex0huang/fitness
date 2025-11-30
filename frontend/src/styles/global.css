@@ -1,0 +1,97 @@
+/* 全局样式 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+    font-size: 15px;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 12px 32px rgba(10, 132, 255, 0.25);
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(10, 132, 255, 0.18);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.error {
+    color: #b91c1c;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    padding: 10px 12px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.field {
+    margin-bottom: 14px;
+}
+
+.field label {
+    display: block;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.field input {
+    width: 100%;
+    padding: 12px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #f8fafc;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+}
+
+.field input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: #ffffff;
+}
+
+.field textarea {
+    width: 100%;
+    padding: 12px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #f8fafc;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.field textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: #ffffff;
+}
+
