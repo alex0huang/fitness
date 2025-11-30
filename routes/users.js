@@ -151,6 +151,11 @@ router.post('/login', async (req, res) => {
             });
         });
 
+        // 设置 CORS 头部（确保跨域请求正常工作）
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        res.setHeader('Access-Control-Allow-Origin', frontendUrl);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+
         return res.json({ 
             message: '登录成功',
             user: {

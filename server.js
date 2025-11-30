@@ -5,9 +5,12 @@ const app = express();
 const pool = require('./database');
 
 // 配置 CORS - 允许前端访问
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173', // 从环境变量读取前端URL
+    origin: frontendUrl,
     credentials: true, // 允许发送 cookies/session
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.use(express.urlencoded({ extended: true }));
@@ -25,9 +28,17 @@ app.use(session({
         maxAge: 24 * 60 * 60 * 1000, // 24小时
         sameSite: isProduction ? 'none' : 'lax', // 跨域时需要 'none'
         httpOnly: true, // 防止 XSS 攻击
-        path: '/' // 确保 cookie 在所有路径都可用
+        path: '/', // 确保 cookie 在所有路径都可用
+        // 注意：跨域时不要设置 domain，让浏览器自动处理
     }
 }));
+
+// 调试：打印配置信息
+if (isProduction) {
+    console.log('生产环境配置:');
+    console.log('FRONTEND_URL:', frontendUrl);
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+}
 
 // API 根路径
 app.get('/', (req, res) => {
