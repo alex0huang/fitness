@@ -10,8 +10,12 @@ app.use(cors({
     origin: frontendUrl,
     credentials: true, // 允许发送 cookies/session
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    exposedHeaders: ['Set-Cookie'],
 }));
+
+// 处理 OPTIONS 预检请求
+app.options('*', cors());
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // 支持JSON请求体

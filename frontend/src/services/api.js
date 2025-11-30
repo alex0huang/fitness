@@ -1,14 +1,22 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
+// 调试：打印 API URL
+console.log('API_BASE_URL:', API_BASE_URL);
+console.log('VITE_API_BASE_URL env:', import.meta.env.VITE_API_BASE_URL);
+
 // 设置请求选项，包含凭据以支持 session
-const fetchOptions = (method, body) => ({
-    method,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    credentials: 'include', // 重要：包含 cookies/session
-    ...(body && { body: JSON.stringify(body) }),
-});
+const fetchOptions = (method, body) => {
+    const options = {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include', // 重要：包含 cookies/session
+        ...(body && { body: JSON.stringify(body) }),
+    };
+    console.log('请求选项:', { method, url: `${API_BASE_URL}`, credentials: options.credentials });
+    return options;
+};
 
 // 处理响应
 const handleResponse = async (response) => {
@@ -21,10 +29,18 @@ const handleResponse = async (response) => {
 
 // 登录
 export const login = async (email, password) => {
-    const response = await fetch(`${API_BASE_URL}/users/login`, {
-        ...fetchOptions('POST', { firstname: email, password }),
-    });
-    return handleResponse(response);
+    const url = `${API_BASE_URL}/users/login`;
+    console.log('登录请求 URL:', url);
+    const options = fetchOptions('POST', { firstname: email, password });
+    console.log('登录请求选项:', options);
+    
+    const response = await fetch(url, options);
+    console.log('登录响应状态:', response.status);
+    console.log('登录响应头:', Object.fromEntries(response.headers.entries()));
+    
+    const result = await handleResponse(response);
+    console.log('登录响应数据:', result);
+    return result;
 };
 
 // 注册
