@@ -45,6 +45,39 @@ const handleResponse = async (response) => {
     return response.json();
 };
 
+// 带重试的 fetch 请求
+const fetchWithRetry = async (url, options, retries = 2) => {
+    for (let i = 0; i <= retries; i++) {
+        try {
+            // 创建超时控制器
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+            
+            const response = await fetch(url, {
+                ...options,
+                signal: controller.signal,
+            });
+            
+            clearTimeout(timeoutId);
+            return response;
+        } catch (error) {
+            // 如果是最后一次重试，抛出错误
+            if (i === retries) {
+                // 检查是否是网络错误或超时
+                if (error.name === 'AbortError') {
+                    throw new Error('请求超时。如果使用 Render 免费服务，首次访问可能需要等待约30秒唤醒服务，请稍后重试。');
+                }
+                if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
+                    throw new Error('网络连接失败，请检查网络连接或稍后重试。如果使用 Render 免费服务，首次访问可能需要等待约30秒唤醒服务。');
+                }
+                throw error;
+            }
+            // 等待后重试（指数退避）
+            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+        }
+    }
+};
+
 // 登录
 export const login = async (email, password) => {
     const url = `${API_BASE_URL}/users/login`;
@@ -86,9 +119,7 @@ export const getMeals = async (date) => {
     const url = date 
         ? `${API_BASE_URL}/meals?date=${date}`
         : `${API_BASE_URL}/meals`;
-    const response = await fetch(url, {
-        ...fetchOptions('GET'),
-    });
+    const response = await fetchWithRetry(url, fetchOptions('GET'));
     return handleResponse(response);
 };
 
@@ -142,9 +173,7 @@ export const updateMealItem = async (mealId, itemId, itemData) => {
 
 // 获取当前用户信息
 export const getCurrentUser = async () => {
-    const response = await fetch(`${API_BASE_URL}/users/me`, {
-        ...fetchOptions('GET'),
-    });
+    const response = await fetchWithRetry(`${API_BASE_URL}/users/me`, fetchOptions('GET'));
     return handleResponse(response);
 };
 

@@ -79,7 +79,13 @@ function Dashboard() {
             if (err.message.includes('未授权') || err.message.includes('401')) {
                 navigate('/users/login');
             } else {
-                setError(err.message || '加载餐食记录失败');
+                // 显示更友好的错误信息
+                const errorMessage = err.message || '加载餐食记录失败';
+                setError(errorMessage);
+                // 如果是网络错误，5秒后自动清除错误信息
+                if (errorMessage.includes('网络') || errorMessage.includes('超时')) {
+                    setTimeout(() => setError(''), 5000);
+                }
             }
         } finally {
             setLoading(false);
