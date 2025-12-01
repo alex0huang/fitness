@@ -244,7 +244,27 @@ function Dashboard() {
     const selectedDateMeals = meals.filter(meal => {
         // 使用统一的日期工具函数处理时区问题
         const mealDateLocal = getLocalDateString(meal.consumed_at);
-        return mealDateLocal === selectedDate;
+        const matches = mealDateLocal === selectedDate;
+        
+        // 调试信息
+        if (!matches && meal.title === '晚餐') {
+            console.log('晚餐记录未匹配:', {
+                mealId: meal.id,
+                consumed_at: meal.consumed_at,
+                mealDateLocal: mealDateLocal,
+                selectedDate: selectedDate,
+                matches: matches
+            });
+        }
+        
+        return matches;
+    });
+    
+    console.log('日期过滤结果:', {
+        selectedDate: selectedDate,
+        totalMeals: meals.length,
+        filteredMeals: selectedDateMeals.length,
+        filteredMealTitles: selectedDateMeals.map(m => m.title)
     });
 
     // 按餐食标题分组并合并
