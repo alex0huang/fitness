@@ -241,30 +241,12 @@ function Dashboard() {
     };
 
     // 计算选中日期的统计，并按餐食类型合并
+    // 注意：后端已经按日期过滤了，所以这里不需要再次过滤
+    // 但为了安全起见，还是保留过滤逻辑
     const selectedDateMeals = meals.filter(meal => {
-        // 使用统一的日期工具函数处理时区问题
-        const mealDateLocal = getLocalDateString(meal.consumed_at);
-        const matches = mealDateLocal === selectedDate;
-        
-        // 调试信息
-        if (!matches && meal.title === '晚餐') {
-            console.log('晚餐记录未匹配:', {
-                mealId: meal.id,
-                consumed_at: meal.consumed_at,
-                mealDateLocal: mealDateLocal,
-                selectedDate: selectedDate,
-                matches: matches
-            });
-        }
-        
-        return matches;
-    });
-    
-    console.log('日期过滤结果:', {
-        selectedDate: selectedDate,
-        totalMeals: meals.length,
-        filteredMeals: selectedDateMeals.length,
-        filteredMealTitles: selectedDateMeals.map(m => m.title)
+        // 使用UTC日期匹配（因为后端存储的是UTC时间）
+        const mealDateUTC = getLocalDateString(meal.consumed_at);
+        return mealDateUTC === selectedDate;
     });
 
     // 按餐食标题分组并合并

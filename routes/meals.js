@@ -30,14 +30,15 @@ router.get('/', async (req, res) => {
         const params = [userId];
 
         if (date) {
-            // 确保日期格式正确，处理时区问题
-            // 前端传递的日期可能是UTC日期，需要转换为本地日期范围查询
+            // 使用UTC日期范围查询，避免时区问题
+            // 前端传递的日期是 YYYY-MM-DD 格式，我们将其转换为UTC日期范围
             const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0];
-            // 使用日期范围查询，避免时区问题
-            // 查询该日期当天的所有记录（考虑时区）
-            query += ` AND DATE(m.consumed_at) = $2::date`;
-            params.push(dateStr);
-            console.log('查询日期:', dateStr, '用户ID:', userId);
+            // 查询该UTC日期当天的所有记录（从00:00:00到23:59:59 UTC）
+            const startDate = new Date(dateStr + 'T00:00:00.000Z');
+            const endDate = new Date(dateStr + 'T23:59:59.999Z');
+            query += ` AND m.consumed_at >= $2 AND m.consumed_at <= $3`;
+            params.push(startDate, endDate);
+            console.log('查询日期范围:', dateStr, 'UTC:', startDate.toISOString(), '到', endDate.toISOString());
         }
 
         query += ` GROUP BY m.id ORDER BY m.consumed_at DESC`;

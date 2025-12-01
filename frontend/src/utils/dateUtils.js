@@ -3,19 +3,34 @@
  */
 
 /**
- * 将UTC时间字符串转换为本地日期字符串（YYYY-MM-DD）
+ * 将UTC时间字符串转换为日期字符串（YYYY-MM-DD）
+ * 注意：这里使用UTC日期，因为后端存储的是UTC时间
  * @param {string} utcDateString - UTC时间字符串，如 "2025-11-30T04:44:00.000Z"
- * @returns {string} 本地日期字符串，如 "2025-11-29"
+ * @returns {string} UTC日期字符串，如 "2025-11-30"
  */
 export const getLocalDateString = (utcDateString) => {
     if (!utcDateString) return null;
     
-    const dateObj = new Date(utcDateString);
-    // 使用本地时间的年、月、日
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    try {
+        const dateObj = new Date(utcDateString);
+        
+        // 检查日期是否有效
+        if (isNaN(dateObj.getTime())) {
+            console.error('无效的日期字符串:', utcDateString);
+            return null;
+        }
+        
+        // 使用UTC日期，因为后端存储的是UTC时间
+        // 这样可以避免时区转换问题
+        const year = dateObj.getUTCFullYear();
+        const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getUTCDate()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}`;
+    } catch (error) {
+        console.error('日期转换错误:', error, utcDateString);
+        return null;
+    }
 };
 
 /**
