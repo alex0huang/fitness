@@ -17,12 +17,12 @@ function Login() {
         setLoading(true);
 
         try {
-            const result = await login(firstname, password);
-            console.log('登录成功');
+            await login(firstname, password);
+            console.log('Login successful');
             navigate('/dashboard');
         } catch (err) {
-            console.error('登录失败:', err);
-            setError(err.message || '登录失败，请检查用户名和密码');
+            console.error('Login failed:', err);
+            setError(err.message || 'Login failed. Please check your name and password.');
         } finally {
             setLoading(false);
         }
@@ -35,41 +35,41 @@ function Login() {
                     <div className="logo">FT</div>
                     <div>
                         <div className="logo-text">Fitness Tracker</div>
-                        <div className="logo-subtitle">简洁、专注的训练记录</div>
+                        <div className="logo-subtitle">Simple, focused nutrition tracking</div>
                     </div>
                 </div>
-                <h1>欢迎回来</h1>
-                <p>登录以继续追踪你的训练与饮食。</p>
+                <h1>Welcome back</h1>
+                <p>Log in to continue tracking your meals and progress.</p>
                 <form onSubmit={handleSubmit}>
                     {error && <div className="error">{error}</div>}
                     <div className="field">
-                        <label htmlFor="firstname">姓名</label>
+                        <label htmlFor="firstname">Name</label>
                         <input
                             type="text"
                             id="firstname"
                             value={firstname}
                             onChange={(e) => setFirstname(e.target.value)}
-                            placeholder="你的名字"
+                            placeholder="Your name"
                             required
                         />
                     </div>
                     <div className="field">
-                        <label htmlFor="password">密码</label>
+                        <label htmlFor="password">Password</label>
                         <input
                             type="password"
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="输入密码"
+                            placeholder="Enter your password"
                             required
                         />
                     </div>
                     <button type="submit" className="btn" disabled={loading}>
-                        {loading ? '登录中...' : '登录'}
+                        {loading ? 'Logging in...' : 'Log in'}
                     </button>
                 </form>
                 <div className="link-row">
-                    还没有账户？ <Link to="/users/new">注册一个</Link>
+                    New here? <Link to="/users/new">Create an account</Link>
                 </div>
             </div>
         </div>

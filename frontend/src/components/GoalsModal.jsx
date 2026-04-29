@@ -30,7 +30,7 @@ function GoalsModal({ isOpen, onClose, onUpdate }) {
                 daily_fat_limit: user.daily_fat_limit || ''
             });
         } catch (err) {
-            setError(err.message || '加载目标失败');
+            setError(err.message || 'Failed to load goals.');
         } finally {
             setLoading(false);
         }
@@ -55,7 +55,7 @@ function GoalsModal({ isOpen, onClose, onUpdate }) {
             }
             onClose();
         } catch (err) {
-            setError(err.message || '保存失败，请重试');
+            setError(err.message || 'Save failed. Please try again.');
         } finally {
             setSaving(false);
         }
@@ -67,7 +67,7 @@ function GoalsModal({ isOpen, onClose, onUpdate }) {
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content goals-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>设置每日目标</h2>
+                    <h2>Daily goals</h2>
                     <button className="modal-close" onClick={onClose}>×</button>
                 </div>
 
@@ -75,74 +75,74 @@ function GoalsModal({ isOpen, onClose, onUpdate }) {
                     {error && <div className="error">{error}</div>}
 
                     {loading ? (
-                        <div className="loading">加载中...</div>
+                        <div className="loading">Loading...</div>
                     ) : (
                         <>
                             <div className="goals-grid">
                                 <div className="field">
-                                    <label htmlFor="calories">每日卡路里目标 (kcal)</label>
+                                    <label htmlFor="calories">Calories target (kcal)</label>
                                     <input
                                         type="number"
                                         id="calories"
                                         value={goals.daily_calorie_limit}
                                         onChange={(e) => setGoals({ ...goals, daily_calorie_limit: e.target.value })}
-                                        placeholder="例如：2000"
+                                        placeholder="e.g. 2000"
                                         min="0"
                                     />
                                 </div>
 
                                 <div className="field">
-                                    <label htmlFor="protein">每日蛋白质目标 (g)</label>
+                                    <label htmlFor="protein">Protein target (g)</label>
                                     <input
                                         type="number"
                                         id="protein"
                                         step="0.1"
                                         value={goals.daily_protein_limit}
                                         onChange={(e) => setGoals({ ...goals, daily_protein_limit: e.target.value })}
-                                        placeholder="例如：150"
+                                        placeholder="e.g. 150"
                                         min="0"
                                     />
                                 </div>
 
                                 <div className="field">
-                                    <label htmlFor="carbs">每日碳水化合物目标 (g)</label>
+                                    <label htmlFor="carbs">Carbs target (g)</label>
                                     <input
                                         type="number"
                                         id="carbs"
                                         step="0.1"
                                         value={goals.daily_carbs_limit}
                                         onChange={(e) => setGoals({ ...goals, daily_carbs_limit: e.target.value })}
-                                        placeholder="例如：200"
+                                        placeholder="e.g. 200"
                                         min="0"
                                     />
                                 </div>
 
                                 <div className="field">
-                                    <label htmlFor="fat">每日脂肪目标 (g)</label>
+                                    <label htmlFor="fat">Fat target (g)</label>
                                     <input
                                         type="number"
                                         id="fat"
                                         step="0.1"
                                         value={goals.daily_fat_limit}
                                         onChange={(e) => setGoals({ ...goals, daily_fat_limit: e.target.value })}
-                                        placeholder="例如：65"
+                                        placeholder="e.g. 65"
                                         min="0"
                                     />
                                 </div>
                             </div>
 
                             <div className="goals-tip">
-                                <p>💡 提示：你可以只设置部分目标，未设置的项目将不显示进度条。</p>
+                                <p>Tip: you can set only the goals you care about—progress bars show only for targets you set.</p>
                             </div>
                         </>
                     )}
 
                     <div className="modal-actions">
                         <button type="button" className="btn btn-secondary" onClick={onClose} disabled={saving}>
-                            取消
+                            Cancel
                         </button>
                         <button type="submit" className="btn btn-primary" disabled={loading || saving}>
-                            {saving ? '保存中...' : '保存'}
+                            {saving ? 'Saving...' : 'Save'}
                         </button>
                     </div>
                 </form>

@@ -20,7 +20,7 @@ function Register() {
             await register(firstname, password);
             navigate('/users/login');
         } catch (err) {
-            setError(err.message || '注册失败，请重试');
+            setError(err.message || 'Registration failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -33,41 +33,41 @@ function Register() {
                     <div className="logo">FT</div>
                     <div>
                         <div className="logo-text">Fitness Tracker</div>
-                        <div className="logo-subtitle">极简又友好的健身记录</div>
+                        <div className="logo-subtitle">Minimal and friendly meal tracking</div>
                     </div>
                 </div>
-                <h1>创建账户</h1>
-                <p>开始记录餐饮与训练，获取个性化提醒与洞察。</p>
+                <h1>Create your account</h1>
+                <p>Start logging meals and get clear insights as you go.</p>
                 <form onSubmit={handleSubmit}>
                     {error && <div className="error">{error}</div>}
                     <div className="field">
-                        <label htmlFor="firstname">姓名</label>
+                        <label htmlFor="firstname">Name</label>
                         <input
                             type="text"
                             id="firstname"
                             value={firstname}
                             onChange={(e) => setFirstname(e.target.value)}
-                            placeholder="你的名字"
+                            placeholder="Your name"
                             required
                         />
                     </div>
                     <div className="field">
-                        <label htmlFor="password">密码</label>
+                        <label htmlFor="password">Password</label>
                         <input
                             type="password"
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="设置密码"
+                            placeholder="Set a password"
                             required
                         />
                     </div>
                     <button type="submit" className="btn" disabled={loading}>
-                        {loading ? '注册中...' : '注册'}
+                        {loading ? 'Creating...' : 'Create account'}
                     </button>
                 </form>
                 <div className="link-row">
-                    已有账户？ <Link to="/users/login">立即登录</Link>
+                    Already have an account? <Link to="/users/login">Log in</Link>
                 </div>
             </div>
         </div>

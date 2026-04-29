@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMeals, logout, createMeal, getCurrentUser, deleteMeal } from '../services/api';
 import AddMealModal from '../components/AddMealModal';
@@ -20,30 +20,19 @@ function Dashboard() {
     const [showGoalsModal, setShowGoalsModal] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        // 先检查登录状态
-        checkAuth();
-        loadUserGoals();
-        loadMeals();
-    }, []);
-
-    const checkAuth = async () => {
+    const checkAuth = useCallback(async () => {
         try {
             const user = await getCurrentUser();
-            console.log('当前用户:', user);
+            console.log('Current user:', user);
         } catch (err) {
-            console.error('认证检查失败:', err);
-            if (err.message.includes('未授权') || err.message.includes('401')) {
+            console.error('Auth check failed:', err);
+            if (err.message.includes('Unauthorized') || err.message.includes('未授权') || err.message.includes('401')) {
                 navigate('/users/login');
             }
         }
-    };
+    }, [navigate]);
 
-    useEffect(() => {
-        loadMeals();
-    }, [selectedDate]);
-
-    const loadUserGoals = async () => {
+    const loadUserGoals = useCallback(async () => {
         try {
             const user = await getCurrentUser();
             setUserGoals({
@@ -53,51 +42,61 @@ function Dashboard() {
                 daily_fat_limit: user.daily_fat_limit
             });
         } catch (err) {
-            console.error('加载用户目标失败:', err);
+            console.error('Failed to load user goals:', err);
         }
-    };
+    }, []);
 
-    const loadMeals = async () => {
+    const loadMeals = useCallback(async (date = selectedDate) => {
         try {
             setLoading(true);
-            console.log('loadMeals - 开始加载，日期:', selectedDate);
-            const data = await getMeals(selectedDate);
-            console.log('loadMeals - 加载到的数据:', data);
-            console.log('loadMeals - 数据数量:', data.length);
+            console.log('loadMeals - loading, date:', date);
+            const data = await getMeals(date);
+            console.log('loadMeals - data:', data);
+            console.log('loadMeals - count:', data.length);
             // 检查meal 30的数据
             const meal30 = data.find(m => m.id === 30);
             if (meal30) {
-                console.log('loadMeals - meal 30的数据:', meal30);
-                console.log('loadMeals - meal 30的items数量:', meal30.items?.length || 0);
-                console.log('loadMeals - meal 30的items:', meal30.items);
+                console.log('loadMeals - meal 30:', meal30);
+                console.log('loadMeals - meal 30 items count:', meal30.items?.length || 0);
+                console.log('loadMeals - meal 30 items:', meal30.items);
             } else {
-                console.log('loadMeals - 未找到meal 30');
+                console.log('loadMeals - meal 30 not found');
             }
             setMeals(data);
         } catch (err) {
-            console.error('loadMeals - 加载失败:', err);
-            if (err.message.includes('未授权') || err.message.includes('401')) {
+            console.error('loadMeals - failed:', err);
+            if (err.message.includes('Unauthorized') || err.message.includes('未授权') || err.message.includes('401')) {
                 navigate('/users/login');
             } else {
                 // 显示更友好的错误信息
-                const errorMessage = err.message || '加载餐食记录失败';
+                const errorMessage = err.message || 'Failed to load meals.';
                 setError(errorMessage);
                 // 如果是网络错误，5秒后自动清除错误信息
-                if (errorMessage.includes('网络') || errorMessage.includes('超时')) {
+                if (errorMessage.includes('Network') || errorMessage.includes('网络') || errorMessage.includes('timeout') || errorMessage.includes('超时')) {
                     setTimeout(() => setError(''), 5000);
                 }
             }
         } finally {
             setLoading(false);
         }
-    };
+    }, [navigate, selectedDate]);
+
+    useEffect(() => {
+        checkAuth();
+        loadUserGoals();
+        loadMeals(selectedDate);
+    }, [checkAuth, loadMeals, loadUserGoals, selectedDate]);
+
+    useEffect(() => {
+        loadMeals(selectedDate);
+    }, [loadMeals, selectedDate]);
 
     const handleLogout = async () => {
         try {
             await logout();
             navigate('/users/login');
         } catch (err) {
-            console.error('登出失败:', err);
+            console.error('Logout failed:', err);
         }
     };
 
@@ -126,7 +125,7 @@ function Dashboard() {
     };
 
     const handleUpdateMeal = async (updatedMeal) => {
-        console.log('handleUpdateMeal 被调用，开始刷新数据');
+        console.log('handleUpdateMeal called, refreshing data');
         console.log('updatedMeal:', updatedMeal);
         
         // 如果更新后的meal有consumed_at，检查是否需要切换日期
@@ -134,13 +133,13 @@ function Dashboard() {
         if (updatedMeal && updatedMeal.consumed_at) {
             // 使用统一的日期工具函数处理时区问题
             const mealDateLocal = getLocalDateString(updatedMeal.consumed_at);
-            console.log('更新后的meal UTC日期:', new Date(updatedMeal.consumed_at).toISOString().split('T')[0]);
-            console.log('更新后的meal 本地日期:', mealDateLocal);
-            console.log('当前选中的日期:', selectedDate);
+            console.log('updated meal UTC date:', new Date(updatedMeal.consumed_at).toISOString().split('T')[0]);
+            console.log('updated meal local date:', mealDateLocal);
+            console.log('current selected date:', selectedDate);
             
             // 如果日期不同，使用meal的本地日期来加载数据
             if (mealDateLocal && mealDateLocal !== selectedDate) {
-                console.log('日期不匹配，使用meal的本地日期加载数据:', mealDateLocal);
+                console.log('date mismatch, loading meal date:', mealDateLocal);
                 dateToLoad = mealDateLocal;
                 // 同时更新选中的日期
                 setSelectedDate(mealDateLocal);
@@ -149,7 +148,7 @@ function Dashboard() {
         
         // 等待一下确保后端更新完成
         await new Promise(resolve => setTimeout(resolve, 300));
-        console.log('第一次刷新数据，日期:', dateToLoad);
+        console.log('first refresh, date:', dateToLoad);
         
         // 多次尝试刷新，确保数据同步
         let refreshedData = [];
@@ -159,18 +158,18 @@ function Dashboard() {
         while (retryCount < maxRetries) {
             try {
                 refreshedData = await getMeals(dateToLoad);
-                console.log(`刷新尝试 ${retryCount + 1} - 数据数量:`, refreshedData.length);
+                console.log(`refresh attempt ${retryCount + 1} - count:`, refreshedData.length);
                 
                 // 检查更新后的meal是否存在
                 if (updatedMeal) {
                     const foundMeal = refreshedData.find(m => m.id === updatedMeal.id);
                     if (foundMeal) {
-                        console.log('刷新后找到更新的meal:', foundMeal.id);
-                        console.log('meal的items数量:', foundMeal.items?.length || 0);
+                        console.log('found updated meal:', foundMeal.id);
+                        console.log('meal items count:', foundMeal.items?.length || 0);
                         if (foundMeal.items && foundMeal.items.length > 0) {
-                            console.log('meal的items:', foundMeal.items.map(i => i.food_name));
+                            console.log('meal items:', foundMeal.items.map(i => i.food_name));
                         } else {
-                            console.warn('警告：meal存在但没有items！');
+                            console.warn('Warning: meal exists but has no items!');
                             // 如果meal存在但没有items，等待一下再试
                             if (retryCount < maxRetries - 1) {
                                 await new Promise(resolve => setTimeout(resolve, 200));
@@ -180,7 +179,7 @@ function Dashboard() {
                         }
                         break; // 找到了，退出循环
                     } else {
-                        console.log(`刷新尝试 ${retryCount + 1} - 未找到更新的meal ${updatedMeal.id}`);
+                        console.log(`refresh attempt ${retryCount + 1} - updated meal not found: ${updatedMeal.id}`);
                         if (retryCount < maxRetries - 1) {
                             await new Promise(resolve => setTimeout(resolve, 200));
                             retryCount++;
@@ -191,7 +190,7 @@ function Dashboard() {
                     break; // 没有updatedMeal，直接退出
                 }
             } catch (err) {
-                console.error(`刷新尝试 ${retryCount + 1} 失败:`, err);
+                console.error(`refresh attempt ${retryCount + 1} failed:`, err);
                 if (retryCount < maxRetries - 1) {
                     await new Promise(resolve => setTimeout(resolve, 200));
                     retryCount++;
@@ -201,17 +200,17 @@ function Dashboard() {
             }
         }
         
-        console.log('最终刷新后的数据数量:', refreshedData.length);
+        console.log('final refreshed count:', refreshedData.length);
         setMeals(refreshedData);
     };
 
     const handleDeleteMeal = async (mealId) => {
-        if (window.confirm('确定要删除这个餐食记录吗？')) {
+        if (window.confirm('Delete this meal entry?')) {
             try {
                 await deleteMeal(mealId);
                 await loadMeals();
             } catch (err) {
-                setError(err.message || '删除失败');
+                setError(err.message || 'Delete failed.');
             }
         }
     };
@@ -226,13 +225,13 @@ function Dashboard() {
                 daily_fat_limit: user.daily_fat_limit
             });
         } catch (err) {
-            console.error('更新用户目标失败:', err);
+            console.error('Failed to refresh user goals:', err);
         }
     };
 
     const formatDateShort = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('zh-CN', {
+        return date.toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
@@ -251,7 +250,7 @@ function Dashboard() {
 
     // 按餐食标题分组并合并
     const groupedMeals = selectedDateMeals.reduce((acc, meal) => {
-        const title = meal.title || '其他';
+        const title = meal.title || 'Other';
         if (!acc[title]) {
             acc[title] = {
                 id: meal.id, // 使用第一个餐食的ID
@@ -333,17 +332,33 @@ function Dashboard() {
         yesterday.setDate(yesterday.getDate() - 1);
         
         if (dateString === today.toISOString().split('T')[0]) {
-            return '今天';
+            return 'Today';
         } else if (dateString === yesterday.toISOString().split('T')[0]) {
-            return '昨天';
+            return 'Yesterday';
         } else {
-            return date.toLocaleDateString('zh-CN', {
+            return date.toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
                 weekday: 'long'
             });
         }
+    };
+
+    const displayMealTitle = (title) => {
+        const normalized = String(title || '').trim();
+        if (!normalized) return 'Other';
+        const map = {
+            '早餐': 'Breakfast',
+            '午餐': 'Lunch',
+            '晚餐': 'Dinner',
+            '其他': 'Other',
+            Breakfast: 'Breakfast',
+            Lunch: 'Lunch',
+            Dinner: 'Dinner',
+            Other: 'Other'
+        };
+        return map[normalized] || normalized;
     };
 
     return (
@@ -355,10 +370,10 @@ function Dashboard() {
                     </div>
                     <nav>
                         <button onClick={() => setShowGoalsModal(true)} className="btn btn-secondary">
-                            设置目标
+                            Goals
                         </button>
                         <button onClick={handleLogout} className="btn btn-secondary">
-                            登出
+                            Log out
                         </button>
                     </nav>
                 </div>
@@ -367,9 +382,9 @@ function Dashboard() {
             <main className="dashboard-main">
                 <div className="dashboard-container">
                     <div className="dashboard-header-section">
-                        <h1>我的记录</h1>
+                        <h1>My log</h1>
                         <div className="date-selector">
-                            <label htmlFor="date-select">选择日期：</label>
+                            <label htmlFor="date-select">Date</label>
                             <input
                                 type="date"
                                 id="date-select"
@@ -389,7 +404,7 @@ function Dashboard() {
                     <div className="stats-grid">
                         <div className="stat-card">
                             <div className="stat-header">
-                                <div className="stat-label">卡路里</div>
+                                <div className="stat-label">Calories</div>
                                 <div className="stat-target">
                                     {userGoals?.daily_calorie_limit ? `/ ${userGoals.daily_calorie_limit} kcal` : ''}
                                 </div>
@@ -408,7 +423,7 @@ function Dashboard() {
 
                         <div className="stat-card">
                             <div className="stat-header">
-                                <div className="stat-label">蛋白质</div>
+                                <div className="stat-label">Protein</div>
                                 <div className="stat-target">
                                     {userGoals?.daily_protein_limit ? `/ ${userGoals.daily_protein_limit}g` : ''}
                                 </div>
@@ -427,7 +442,7 @@ function Dashboard() {
 
                         <div className="stat-card">
                             <div className="stat-header">
-                                <div className="stat-label">碳水化合物</div>
+                                <div className="stat-label">Carbs</div>
                                 <div className="stat-target">
                                     {userGoals?.daily_carbs_limit ? `/ ${userGoals.daily_carbs_limit}g` : ''}
                                 </div>
@@ -446,7 +461,7 @@ function Dashboard() {
 
                         <div className="stat-card">
                             <div className="stat-header">
-                                <div className="stat-label">脂肪</div>
+                                <div className="stat-label">Fat</div>
                                 <div className="stat-target">
                                     {userGoals?.daily_fat_limit ? `/ ${userGoals.daily_fat_limit}g` : ''}
                                 </div>
@@ -467,7 +482,7 @@ function Dashboard() {
                     {/* 添加餐食按钮 */}
                     <div className="action-bar">
                         <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
-                            + 添加餐食
+                            + Add meal
                         </button>
                     </div>
 
@@ -476,12 +491,12 @@ function Dashboard() {
 
                     {/* 餐食列表 - 只显示选中日期的，相同类型合并显示 */}
                     {loading ? (
-                        <div className="loading">加载中...</div>
+                        <div className="loading">Loading...</div>
                     ) : mergedMeals.length === 0 ? (
                         <div className="empty-state">
-                            <p>{formatDateDisplay(selectedDate)}还没有记录任何餐食</p>
+                            <p>No meals logged for {formatDateDisplay(selectedDate)}.</p>
                             <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
-                                添加第一条记录
+                                Add your first meal
                             </button>
                         </div>
                     ) : (
@@ -491,9 +506,9 @@ function Dashboard() {
                                     <div className="meal-header">
                                         <div className="meal-title-row">
                                             <h3>
-                                                {meal.title}
+                                                {displayMealTitle(meal.title)}
                                                 {meal.mealCount > 1 && (
-                                                    <span className="meal-count-badge">({meal.mealCount}次)</span>
+                                                    <span className="meal-count-badge">({meal.mealCount}x)</span>
                                                 )}
                                             </h3>
                                             <span className="meal-time">
@@ -504,16 +519,16 @@ function Dashboard() {
                                             <button 
                                                 className="btn-edit-meal"
                                                 onClick={() => handleEditMeal(meal)}
-                                                title="编辑"
+                                                title="Edit"
                                             >
-                                                编辑
+                                                Edit
                                             </button>
                                             <button 
                                                 className="btn-delete-meal"
                                                 onClick={() => handleDeleteMeal(meal.id)}
-                                                title="删除"
+                                                title="Delete"
                                             >
-                                                删除
+                                                Delete
                                             </button>
                                         </div>
                                     </div>
@@ -523,7 +538,7 @@ function Dashboard() {
                                     {/* 显示食物项列表 */}
                                     {meal.items && meal.items.length > 0 && (
                                         <div className="meal-items">
-                                            <div className="meal-items-label">食物：</div>
+                                            <div className="meal-items-label">Items</div>
                                             <div className="meal-items-list">
                                                 {meal.items.map((item, index) => (
                                                     <span key={item.id || index} className="meal-item-tag">
@@ -538,13 +553,13 @@ function Dashboard() {
                                             <strong>{Math.round(meal.total_calories || 0)}</strong> kcal
                                         </span>
                                         <span className="meal-stat">
-                                            蛋白质 <strong>{Math.round(meal.total_protein || 0)}</strong>g
+                                            Protein <strong>{Math.round(meal.total_protein || 0)}</strong>g
                                         </span>
                                         <span className="meal-stat">
-                                            碳水 <strong>{Math.round(meal.total_carbs || 0)}</strong>g
+                                            Carbs <strong>{Math.round(meal.total_carbs || 0)}</strong>g
                                         </span>
                                         <span className="meal-stat">
-                                            脂肪 <strong>{Math.round(meal.total_fat || 0)}</strong>g
+                                            Fat <strong>{Math.round(meal.total_fat || 0)}</strong>g
                                         </span>
                                     </div>
                                 </div>

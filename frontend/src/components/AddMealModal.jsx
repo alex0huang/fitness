@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './AddMealModal.css';
 
 function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
-    const getDefaultDateTime = () => {
+    const getDefaultDateTime = useCallback(() => {
         if (defaultDate) {
             // 如果提供了日期，使用该日期的当前时间
             const date = new Date(defaultDate);
@@ -11,7 +11,7 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
             return date.toISOString().slice(0, 16);
         }
         return new Date().toISOString().slice(0, 16);
-    };
+    }, [defaultDate]);
 
     const [title, setTitle] = useState('');
     const [consumedAt, setConsumedAt] = useState(getDefaultDateTime());
@@ -22,7 +22,7 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
             setConsumedAt(getDefaultDateTime());
             setTitle(''); // 重置标题
         }
-    }, [isOpen, defaultDate]);
+    }, [isOpen, getDefaultDateTime]);
     const [items, setItems] = useState([
         { food_name: '', calories: '', protein_grams: '', carbs_grams: '', fat_grams: '' }
     ]);
@@ -54,13 +54,13 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
         // 验证至少有一个食物项有名称
         const validItems = items.filter(item => item.food_name.trim());
         if (validItems.length === 0) {
-            setError('请至少添加一个食物项');
+            setError('Please add at least one item.');
             return;
         }
 
         // 验证标题
         if (!title.trim()) {
-            setError('请输入餐食标题');
+            setError('Please choose a meal title.');
             return;
         }
 
@@ -91,7 +91,7 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
             setItems([{ food_name: '', calories: '', protein_grams: '', carbs_grams: '', fat_grams: '' }]);
             onClose();
         } catch (err) {
-            setError(err.message || '保存失败，请重试');
+            setError(err.message || 'Save failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -101,7 +101,7 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>添加餐食</h2>
+                    <h2>Add meal</h2>
                     <button className="modal-close" onClick={onClose}>×</button>
                 </div>
 
@@ -109,7 +109,7 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
                     {error && <div className="error">{error}</div>}
 
                     <div className="field">
-                        <label htmlFor="title">餐食标题 *</label>
+                        <label htmlFor="title">Meal title *</label>
                         <select
                             id="title"
                             value={title}
@@ -117,16 +117,16 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
                             required
                             className="title-select"
                         >
-                            <option value="">请选择</option>
-                            <option value="早餐">早餐</option>
-                            <option value="午餐">午餐</option>
-                            <option value="晚餐">晚餐</option>
-                            <option value="其他">其他</option>
+                            <option value="">Select</option>
+                            <option value="早餐">Breakfast</option>
+                            <option value="午餐">Lunch</option>
+                            <option value="晚餐">Dinner</option>
+                            <option value="其他">Other</option>
                         </select>
                     </div>
 
                     <div className="field">
-                        <label htmlFor="consumedAt">用餐时间</label>
+                        <label htmlFor="consumedAt">Time</label>
                         <input
                             type="datetime-local"
                             id="consumedAt"
@@ -136,21 +136,21 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
                     </div>
 
                     <div className="field">
-                        <label htmlFor="notes">备注</label>
+                        <label htmlFor="notes">Notes</label>
                         <textarea
                             id="notes"
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            placeholder="可选备注信息"
+                            placeholder="Optional notes"
                             rows="3"
                         />
                     </div>
 
                     <div className="items-section">
                         <div className="items-header">
-                            <label>食物项 *</label>
+                            <label>Items *</label>
                             <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddItem}>
-                                + 添加食物
+                                + Add item
                             </button>
                         </div>
 
@@ -159,14 +159,14 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
                                 <div className="item-fields">
                                     <input
                                         type="text"
-                                        placeholder="食物名称 *"
+                                        placeholder="Item name *"
                                         value={item.food_name}
                                         onChange={(e) => handleItemChange(index, 'food_name', e.target.value)}
                                         className="item-food-name"
                                     />
                                     <input
                                         type="number"
-                                        placeholder="卡路里"
+                                        placeholder="Calories"
                                         value={item.calories}
                                         onChange={(e) => handleItemChange(index, 'calories', e.target.value)}
                                         className="item-nutrition item-calories"
@@ -174,7 +174,7 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
                                     <input
                                         type="number"
                                         step="0.1"
-                                        placeholder="蛋白质(g)"
+                                        placeholder="Protein (g)"
                                         value={item.protein_grams}
                                         onChange={(e) => handleItemChange(index, 'protein_grams', e.target.value)}
                                         className="item-nutrition item-protein"
@@ -182,7 +182,7 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
                                     <input
                                         type="number"
                                         step="0.1"
-                                        placeholder="碳水(g)"
+                                        placeholder="Carbs (g)"
                                         value={item.carbs_grams}
                                         onChange={(e) => handleItemChange(index, 'carbs_grams', e.target.value)}
                                         className="item-nutrition item-carbs"
@@ -190,7 +190,7 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
                                     <input
                                         type="number"
                                         step="0.1"
-                                        placeholder="脂肪(g)"
+                                        placeholder="Fat (g)"
                                         value={item.fat_grams}
                                         onChange={(e) => handleItemChange(index, 'fat_grams', e.target.value)}
                                         className="item-nutrition item-fat"
@@ -202,7 +202,7 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
                                         className="btn-remove-item"
                                         onClick={() => handleRemoveItem(index)}
                                     >
-                                        删除
+                                        Remove
                                     </button>
                                 )}
                             </div>
@@ -211,10 +211,10 @@ function AddMealModal({ isOpen, onClose, onSave, defaultDate }) {
 
                     <div className="modal-actions">
                         <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>
-                            取消
+                            Cancel
                         </button>
                         <button type="submit" className="btn btn-primary" disabled={loading}>
-                            {loading ? '保存中...' : '保存'}
+                            {loading ? 'Saving...' : 'Save'}
                         </button>
                     </div>
                 </form>

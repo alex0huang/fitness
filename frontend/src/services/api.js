@@ -39,8 +39,8 @@ const fetchOptions = (method, body) => {
 // 处理响应
 const handleResponse = async (response) => {
     if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: '请求失败' }));
-        throw new Error(error.error || '请求失败');
+        const error = await response.json().catch(() => ({ error: 'Request failed.' }));
+        throw new Error(error.error || 'Request failed.');
     }
     return response.json();
 };
@@ -65,10 +65,10 @@ const fetchWithRetry = async (url, options, retries = 2) => {
             if (i === retries) {
                 // 检查是否是网络错误或超时
                 if (error.name === 'AbortError') {
-                    throw new Error('请求超时。如果使用 Render 免费服务，首次访问可能需要等待约30秒唤醒服务，请稍后重试。');
+                    throw new Error('Request timed out. If you are using Render free tier, the first request may take ~30s to wake the service. Please try again.');
                 }
                 if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
-                    throw new Error('网络连接失败，请检查网络连接或稍后重试。如果使用 Render 免费服务，首次访问可能需要等待约30秒唤醒服务。');
+                    throw new Error('Network request failed. Please check your connection and try again. If you are using Render free tier, the first request may take ~30s to wake the service.');
                 }
                 throw error;
             }
@@ -111,7 +111,7 @@ export const logout = async () => {
     // 清除 token
     setToken(null);
     console.log('Token 已清除');
-    return { message: '登出成功' };
+    return { message: 'Logged out.' };
 };
 
 // 获取餐食列表

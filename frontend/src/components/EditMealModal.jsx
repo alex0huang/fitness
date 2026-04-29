@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { updateMeal, deleteMeal, getMeals } from '../services/api';
+import { updateMeal, deleteMeal } from '../services/api';
 import './AddMealModal.css';
 
 function EditMealModal({ isOpen, onClose, onSave, meal }) {
@@ -75,13 +75,13 @@ function EditMealModal({ isOpen, onClose, onSave, meal }) {
         });
         
         if (validItems.length === 0) {
-            setError('请至少添加一个食物项');
+            setError('Please add at least one item.');
             return;
         }
         
         // 验证标题
         if (!title.trim()) {
-            setError('请选择餐食标题');
+            setError('Please choose a meal title.');
             return;
         }
 
@@ -180,7 +180,7 @@ function EditMealModal({ isOpen, onClose, onSave, meal }) {
             onClose();
         } catch (err) {
             console.error('保存餐食失败:', err);
-            setError(err.message || '保存失败，请重试');
+            setError(err.message || 'Save failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -190,7 +190,7 @@ function EditMealModal({ isOpen, onClose, onSave, meal }) {
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>编辑餐食</h2>
+                    <h2>Edit meal</h2>
                     <button className="modal-close" onClick={onClose}>×</button>
                 </div>
 
@@ -198,7 +198,7 @@ function EditMealModal({ isOpen, onClose, onSave, meal }) {
                     {error && <div className="error">{error}</div>}
 
                     <div className="field">
-                        <label htmlFor="title">餐食标题 *</label>
+                        <label htmlFor="title">Meal title *</label>
                         <select
                             id="title"
                             value={title}
@@ -206,16 +206,16 @@ function EditMealModal({ isOpen, onClose, onSave, meal }) {
                             required
                             className="title-select"
                         >
-                            <option value="">请选择</option>
-                            <option value="早餐">早餐</option>
-                            <option value="午餐">午餐</option>
-                            <option value="晚餐">晚餐</option>
-                            <option value="其他">其他</option>
+                            <option value="">Select</option>
+                            <option value="早餐">Breakfast</option>
+                            <option value="午餐">Lunch</option>
+                            <option value="晚餐">Dinner</option>
+                            <option value="其他">Other</option>
                         </select>
                     </div>
 
                     <div className="field">
-                        <label htmlFor="consumedAt">用餐时间</label>
+                        <label htmlFor="consumedAt">Time</label>
                         <input
                             type="datetime-local"
                             id="consumedAt"
@@ -225,21 +225,21 @@ function EditMealModal({ isOpen, onClose, onSave, meal }) {
                     </div>
 
                     <div className="field">
-                        <label htmlFor="notes">备注</label>
+                        <label htmlFor="notes">Notes</label>
                         <textarea
                             id="notes"
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            placeholder="可选备注信息"
+                            placeholder="Optional notes"
                             rows="3"
                         />
                     </div>
 
                     <div className="items-section">
                         <div className="items-header">
-                            <label>食物项 *</label>
+                            <label>Items *</label>
                             <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddItem}>
-                                + 添加食物
+                                + Add item
                             </button>
                         </div>
 
@@ -248,14 +248,14 @@ function EditMealModal({ isOpen, onClose, onSave, meal }) {
                                 <div className="item-fields">
                                     <input
                                         type="text"
-                                        placeholder="食物名称 *"
+                                        placeholder="Item name *"
                                         value={item.food_name}
                                         onChange={(e) => handleItemChange(index, 'food_name', e.target.value)}
                                         className="item-food-name"
                                     />
                                     <input
                                         type="number"
-                                        placeholder="卡路里"
+                                        placeholder="Calories"
                                         value={item.calories}
                                         onChange={(e) => handleItemChange(index, 'calories', e.target.value)}
                                         className="item-nutrition item-calories"
@@ -263,7 +263,7 @@ function EditMealModal({ isOpen, onClose, onSave, meal }) {
                                     <input
                                         type="number"
                                         step="0.1"
-                                        placeholder="蛋白质(g)"
+                                        placeholder="Protein (g)"
                                         value={item.protein_grams}
                                         onChange={(e) => handleItemChange(index, 'protein_grams', e.target.value)}
                                         className="item-nutrition item-protein"
@@ -271,7 +271,7 @@ function EditMealModal({ isOpen, onClose, onSave, meal }) {
                                     <input
                                         type="number"
                                         step="0.1"
-                                        placeholder="碳水(g)"
+                                        placeholder="Carbs (g)"
                                         value={item.carbs_grams}
                                         onChange={(e) => handleItemChange(index, 'carbs_grams', e.target.value)}
                                         className="item-nutrition item-carbs"
@@ -279,7 +279,7 @@ function EditMealModal({ isOpen, onClose, onSave, meal }) {
                                     <input
                                         type="number"
                                         step="0.1"
-                                        placeholder="脂肪(g)"
+                                        placeholder="Fat (g)"
                                         value={item.fat_grams}
                                         onChange={(e) => handleItemChange(index, 'fat_grams', e.target.value)}
                                         className="item-nutrition item-fat"
@@ -291,7 +291,7 @@ function EditMealModal({ isOpen, onClose, onSave, meal }) {
                                         className="btn-remove-item"
                                         onClick={() => handleRemoveItem(index)}
                                     >
-                                        删除
+                                        Remove
                                     </button>
                                 )}
                             </div>
@@ -300,10 +300,10 @@ function EditMealModal({ isOpen, onClose, onSave, meal }) {
 
                     <div className="modal-actions">
                         <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>
-                            取消
+                            Cancel
                         </button>
                         <button type="submit" className="btn btn-primary" disabled={loading}>
-                            {loading ? '保存中...' : '保存'}
+                            {loading ? 'Saving...' : 'Save'}
                         </button>
                     </div>
                 </form>

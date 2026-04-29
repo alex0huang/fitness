@@ -1,16 +1,32 @@
-# React + Vite
+# 前端（React + Vite）
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+这是 Fitness Tracker 的前端项目，基于 React + Vite 构建。
 
-Currently, two official plugins are available:
+## 开发
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+在仓库根目录：
 
-## React Compiler
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+默认开发地址：`http://localhost:5173`
 
-## Expanding the ESLint configuration
+## 构建
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+cd frontend
+npm run build
+```
+
+构建产物会输出到 `frontend/dist/`。
+
+## 环境变量
+
+前端通过 `VITE_API_BASE_URL` 指定后端 API 地址，例如：
+
+```bash
+VITE_API_BASE_URL=http://localhost:3000
+```
